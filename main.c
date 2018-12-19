@@ -25,6 +25,7 @@ void initializeApplication(void);
 
 //	Don't touch
 extern const int	GRID_PANE, STATE_PANE;
+extern const int 	GRID_PANE_WIDTH, GRID_PANE_HEIGHT;
 extern int	gMainWindow, gSubwindow[2];
 
 //	Don't rename any of these variables
@@ -49,6 +50,11 @@ const int MAX_NUM_MESSAGES = 8;
 const int MAX_LENGTH_MESSAGE = 32;
 char** message;
 
+int **robotLoc;
+int **boxLoc;
+int *doorAssign;	//	door id assigned to each robot-box pair
+int **doorLoc;
+
 //==================================================================================
 //	These are the functions that tie the simulation with the rendering.
 //	Some parts are "don't touch."  Other parts need your intervention
@@ -64,26 +70,37 @@ void displayGridPane(void)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
+	glTranslatef(0, GRID_PANE_HEIGHT, 0);
+	glScalef(1.f, -1.f, 1.f);
+	
 	//-----------------------------
 	//	CHANGE THIS
 	//-----------------------------
 	//	Here I hard-code myself some data for robots and doors.  Obviously this code
 	//	this code must go away.  I just want to show you how to display the information
 	//	about a robot-box pair or a door.
-	int robotLoc[][2] = {{12, 8}, {6, 9}, {3, 14}, {11, 15}};
-	int boxLoc[][2] = {{6, 7}, {4, 12}, {13, 13}, {8, 12}};
-	int doorAssign[] = {1, 0, 0, 2};	//	door id assigned to each robot-box pair
-	int doorLoc[][2] = {{3, 3}, {8, 11}, {7, 10}};
+	//	Important here:  I don't think of the locations (robot/box/door) as x and y, but
+	//	as row and column.  So, the first index is a row (y) coordinate, and the second
+	//	index is a column (x) coordinate.
+
+
+
+	//	normally, here I would initialize the location of my doors, boxes,
+	//	and robots, and create threads (not necessarily in that order).
+	//	For the handout I have nothing to do.
+
 	for (int i=0; i<numBoxes; i++)
 	{
 		//	here I would test if the robot thread is still live
-		drawRobotAndBox(i, robotLoc[i][1], robotLoc[i][0], boxLoc[i][1], boxLoc[i][0], doorAssign[i]);
+		//						row				column			row			column
+		drawRobotAndBox(i, robotLoc[i][0], robotLoc[i][1], boxLoc[i][0], boxLoc[i][1], doorAssign[i]);
 	}
 
 	for (int i=0; i<numDoors; i++)
 	{
 		//	here I would test if the robot thread is still alive
-		drawDoor(i, doorLoc[i][1], doorLoc[i][0]);
+		//				row				column	
+		drawDoor(i, doorLoc[i][0], doorLoc[i][1]);
 	}
 
 	//	This call does nothing important. It only draws lines
@@ -163,10 +180,10 @@ int main(int argc, char** argv)
 	//	grid, the number of boxes (and robots), and the number of doors.
 	//	You are going to have to extract these.  For the time being,
 	//	I hard code-some values
-	numRows = 16;
-	numCols = 20;
-	numDoors = 3;
-	numBoxes = 4;
+	numRows = atoi(argv[1]);
+	numCols = atoi(argv[2]);
+	numDoors = atoi(argv[3]);
+	numBoxes = atoi(argv[4]);
 
 	//	Even though we extracted the relevant information from the argument
 	//	list, I still need to pass argc and argv to the front-end init
@@ -225,13 +242,43 @@ void initializeApplication(void)
 	//	Yes, I am using the C random generator after ranting in class that the C random
 	//	generator was junk.  Here I am not using it to produce "serious" data (as in a
 	//	simulation), only some color, in meant-to-be-thrown-away code
-	
+
 	//	seed the pseudo-random generator
 	srand((unsigned int) time(NULL));
+	robotLoc = (int **) malloc(numBoxes * sizeof(int *));
+	for(int i = 0; i < numBoxes; i++)
+	{
+		robotLoc[i] = (int *) malloc(2 * sizeof(int));
+		robotLoc[i][0] = rand() % numRows;
+		robotLoc[i][1] = rand() % numCols;
 
-	//	normally, here I would initialize the location of my doors, boxes,
-	//	and robots, and create threads (not necessarily in that order).
-	//	For the handout I have nothing to do.
+		printf("Robot Row: %d\t Col: %d\n", robotLoc[i][0], robotLoc[i][1]);
+	}
+
+	boxLoc = (int **) malloc(numBoxes * sizeof(int *));
+	for(int i = 0; i < numBoxes; i++)
+	{
+		boxLoc[i] = (int *) malloc(2 * sizeof(int));
+		boxLoc[i][0] = (rand() % numRows + 1);
+		boxLoc[i][1] = (rand() % numCols + 1);
+		printf("Box Row: %d\t Col: %d\n", boxLoc[i][0], boxLoc[i][1]);
+	}
+
+	doorAssign = (int *) malloc(numBoxes * sizeof(int));
+	for(int i = 0; i < numBoxes; i++)
+	{
+		doorAssign[i] = (rand() % numDoors);
+		printf("Col: %d\n", doorAssign[i]);
+	}
+
+	doorLoc = (int **) malloc(numDoors * sizeof(int *));
+	for(int i = 0; i < numDoors; i++)
+	{
+		doorLoc[i] = (int *) malloc(2 * sizeof(int));
+		doorLoc[i][0] = rand() % numRows;
+		doorLoc[i][1] = rand() % numCols;
+		printf("Door Row: %d\t Col: %d\n", doorLoc[i][0], doorLoc[i][1]);
+	}
 }
 
 
