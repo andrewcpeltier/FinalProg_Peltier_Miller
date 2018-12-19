@@ -17,6 +17,8 @@
 void displayGridPane(void);
 void displayStatePane(void);
 void initializeApplication(void);
+void moveBox(void);
+void moveRobot(void);
 
 
 //==================================================================================
@@ -72,17 +74,6 @@ void displayGridPane(void)
 
 	glTranslatef(0, GRID_PANE_HEIGHT, 0);
 	glScalef(1.f, -1.f, 1.f);
-	
-	//-----------------------------
-	//	CHANGE THIS
-	//-----------------------------
-	//	Here I hard-code myself some data for robots and doors.  Obviously this code
-	//	this code must go away.  I just want to show you how to display the information
-	//	about a robot-box pair or a door.
-	//	Important here:  I don't think of the locations (robot/box/door) as x and y, but
-	//	as row and column.  So, the first index is a row (y) coordinate, and the second
-	//	index is a column (x) coordinate.
-
 
 
 	//	normally, here I would initialize the location of my doors, boxes,
@@ -102,6 +93,9 @@ void displayGridPane(void)
 		//				row				column	
 		drawDoor(i, doorLoc[i][0], doorLoc[i][1]);
 	}
+
+	moveBox();
+
 
 	//	This call does nothing important. It only draws lines
 	//	There is nothing to synchronize here
@@ -249,26 +243,26 @@ void initializeApplication(void)
 	for(int i = 0; i < numBoxes; i++)
 	{
 		robotLoc[i] = (int *) malloc(2 * sizeof(int));
-		robotLoc[i][0] = rand() % numRows;
-		robotLoc[i][1] = rand() % numCols;
+		robotLoc[i][0] = rand() % numRows - 1;
+		robotLoc[i][1] = rand() % numCols - 1;
 
-		printf("Robot Row: %d\t Col: %d\n", robotLoc[i][0], robotLoc[i][1]);
+		//printf("Robot Row: %d\t Col: %d\n", robotLoc[i][0], robotLoc[i][1]);
 	}
 
 	boxLoc = (int **) malloc(numBoxes * sizeof(int *));
 	for(int i = 0; i < numBoxes; i++)
 	{
 		boxLoc[i] = (int *) malloc(2 * sizeof(int));
-		boxLoc[i][0] = (rand() % numRows + 1);
-		boxLoc[i][1] = (rand() % numCols + 1);
-		printf("Box Row: %d\t Col: %d\n", boxLoc[i][0], boxLoc[i][1]);
+		boxLoc[i][0] = (rand() % ((numRows - 1) - 2 + 1)) + 1;
+		boxLoc[i][1] = (rand() % ((numCols - 1) - 2 + 1)) + 1;
+		//printf("Box Row: %d\t Col: %d\n", boxLoc[i][0], boxLoc[i][1]);
 	}
 
 	doorAssign = (int *) malloc(numBoxes * sizeof(int));
 	for(int i = 0; i < numBoxes; i++)
 	{
 		doorAssign[i] = (rand() % numDoors);
-		printf("Col: %d\n", doorAssign[i]);
+		//printf("Col: %d\n", doorAssign[i]);
 	}
 
 	doorLoc = (int **) malloc(numDoors * sizeof(int *));
@@ -277,8 +271,150 @@ void initializeApplication(void)
 		doorLoc[i] = (int *) malloc(2 * sizeof(int));
 		doorLoc[i][0] = rand() % numRows;
 		doorLoc[i][1] = rand() % numCols;
-		printf("Door Row: %d\t Col: %d\n", doorLoc[i][0], doorLoc[i][1]);
+		//printf("Door Row: %d\t Col: %d\n", doorLoc[i][0], doorLoc[i][1]);
 	}
 }
+
+void moveBox(void)
+{
+	for(int i = 0; i < numBoxes; i++)
+	{
+		// Box is not in the x position of the door
+		if(boxLoc[i][1] != doorLoc[doorAssign[i]][1])
+		{
+			// Box is to the left of the door
+			if(doorLoc[doorAssign[i]][1] - boxLoc[i][1] < 0)
+			{
+				// Robot is not on the right side of the box
+				if(robotLoc[i][1] != boxLoc[i][1] + 1)
+				{
+					// Move robot to the right
+					if(robotLoc[i][1] > boxLoc[i][1] + 1)
+						robotLoc[i][1]--;
+					// Move robot to the left
+					else
+						robotLoc[i][1]++;
+				}
+				// Robot is on the right side of the box
+				else
+				{
+					// Robot is not on same y position, so move it to that position
+					if(robotLoc[i][0] < boxLoc[i][0])
+						robotLoc[i][0]++;
+					else if (robotLoc[i][0] > boxLoc[i][0])
+						robotLoc[i][0]--;
+					// Move the box and the robot, they are now both in correct spot
+					else
+					{
+						robotLoc[i][1]--;
+						boxLoc[i][1]--;
+					}
+				}
+			}
+			// Box is to the right of the door
+			else
+			{
+				// Robot is not on the left side of the box
+				if(robotLoc[i][1] != boxLoc[i][1] - 1)
+				{
+					// Move robot to the left
+					if(robotLoc[i][1] > boxLoc[i][1] - 1)
+						robotLoc[i][1]--;
+					// Move robot to the right
+					else
+						robotLoc[i][1]++;
+				}
+				// Robot is on the left side of the box
+				else
+				{
+					// Robot is not aligned with y, so do that
+					if(robotLoc[i][0] < boxLoc[i][0])
+						robotLoc[i][0]++;
+					else if (robotLoc[i][0] > boxLoc[i][0])
+						robotLoc[i][0]--;
+					// Move the box
+					else
+					{
+						robotLoc[i][1]++;
+						boxLoc[i][1]++;
+					}
+				}
+			}
+		}
+		else if( boxLoc[i][0] != doorLoc[doorAssign[i]][0])
+		{
+			// Box is above the door
+			if(doorLoc[doorAssign[i]][0] - boxLoc[i][0] < 0)
+			{
+				// Robot is not above the box
+				if(robotLoc[i][0] != boxLoc[i][0] - 1)
+				{
+					// Move robot down
+					if(robotLoc[i][0] > boxLoc[i][0] - 1)
+						robotLoc[i][0]--;
+					// Move robot up
+					else
+						robotLoc[i][0]++;
+				}
+				// Robot is in right y position
+				else
+				{
+					// Robot is not on same x position, so move it to that position
+					if(robotLoc[i][1] < boxLoc[i][1])
+						robotLoc[i][1]++;
+					else if (robotLoc[i][1] > boxLoc[i][1])
+						robotLoc[i][1]--;
+					// Move the box and the robot, they are now both in correct spot
+					else
+					{
+						robotLoc[i][0]--;
+						boxLoc[i][0]--;
+					}
+				}
+			}
+			// Box is below the door
+			else
+			{
+				// Robot is not below
+				if(robotLoc[i][0] != boxLoc[i][0] + 1)
+				{
+					// Move robot to the left
+					if(robotLoc[i][0] > boxLoc[i][0] + 1)
+						robotLoc[i][0]--;
+					// Move robot to the right
+					else
+						robotLoc[i][0]++;
+				}
+				// Robot is on the left side of the box
+				else
+				{
+					// Robot is not aligned with y, so do that
+					if(robotLoc[i][1] < boxLoc[i][1])
+						robotLoc[i][1]++;
+					else if (robotLoc[i][1] > boxLoc[i][1])
+						robotLoc[i][1]--;
+					// Move the box
+					else
+					{
+						robotLoc[i][0]++;
+						boxLoc[i][0]++;
+					}
+				}
+			}
+		}
+	}
+}
+
+void moveRobot(void)
+{
+	
+}
+
+
+
+
+
+
+
 
 
