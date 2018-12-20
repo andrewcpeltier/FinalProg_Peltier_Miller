@@ -8,17 +8,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <dirent.h>
+
+#include <sys/stat.h>	//stat struct used for program output
+#include <dirent.h>		
 //
 #include "gl_frontEnd.h"
+
+#define PARAMS 1
+#define DOORS 3
+#define BOXES 5
+#define ROBOTS 7
+
+struct robot
+{
+	int robotNum,
+		robotRow,
+		robotCol,
+		boxRow,
+		boxCol,
+		doorNum,
+		doorRow,
+		doorCol;
+	char path[1024];
+}; 
+
 
 //==================================================================================
 //	Function prototypes
 //==================================================================================
-void displayGridPane(void);
+void displayGridPane();
 void displayStatePane(void);
 void initializeApplication(void);
 void moveBox(void);
-void moveRobot(void);
 
 
 //==================================================================================
@@ -57,6 +79,8 @@ int **boxLoc;
 int *doorAssign;	//	door id assigned to each robot-box pair
 int **doorLoc;
 
+struct robot *myRobots[1024];
+struct robot *(*robots)[] = &myRobots;
 //==================================================================================
 //	These are the functions that tie the simulation with the rendering.
 //	Some parts are "don't touch."  Other parts need your intervention
@@ -64,7 +88,65 @@ int **doorLoc;
 //==================================================================================
 
 
-void displayGridPane(void)
+//------------------------------------------------------------------------
+//	You shouldn't have to change anything in the main function besides
+//	the initialization of numRows, numCos, numDoors, numBoxes.
+//------------------------------------------------------------------------
+int main(int argc, char** argv)
+{
+	//	We know that the arguments  of the program  are going
+	//	to be the width (number of columns) and height (number of rows) of the
+	//	grid, the number of boxes (and robots), and the number of doors.
+	//	You are going to have to extract these.  For the time being,
+	//	I hard code-some values
+	numRows = atoi(argv[1]);
+	numCols = atoi(argv[2]);
+	numDoors = atoi(argv[3]);
+	numBoxes = atoi(argv[4]);
+
+
+
+	//	Even though we extracted the relevant information from the argument
+	//	list, I still need to pass argc and argv to the front-end init
+	//	function because that function passes them to glutInit, the required call
+	//	to the initialization of the glut library.
+	initializeFrontEnd(argc, argv, displayGridPane, displayStatePane);
+	
+	//Allocate memory for each of the robot structs
+	for(int i = 0; i < numBoxes; i++)
+	{
+		myRobots[i] = malloc(sizeof(struct robot));
+	}
+
+	//	Now we can do application-level initialization
+	initializeApplication();
+
+
+
+	//	Now we enter the main loop of the program and to a large extend
+	//	"lose control" over its execution.  The callback functions that 
+	//	we set up earlier will be called when the corresponding event
+	//	occurs
+	glutMainLoop();
+	
+	//	Free allocated resource before leaving (not absolutely needed, but
+	//	just nicer.  Also, if you crash there, you know something is wrong
+	//	in your code.
+	for (int i=0; i< numRows; i++)
+		free(grid[i]);
+	free(grid);
+	for (int k=0; k<MAX_NUM_MESSAGES; k++)
+		free(message[k]);
+	free(message);
+
+	
+	//	This will probably never be executed (the exit point will be in one of the
+	//	call back functions).
+	return 0;
+}
+
+
+void displayGridPane() 
 {
 	//	This is OpenGL/glut magic.  Don't touch
 	glutSetWindow(gSubwindow[GRID_PANE]);
@@ -74,6 +156,17 @@ void displayGridPane(void)
 
 	glTranslatef(0, GRID_PANE_HEIGHT, 0);
 	glScalef(1.f, -1.f, 1.f);
+	
+	//-----------------------------
+	//	CHANGE THIS
+	//-----------------------------
+	//	Here I hard-code myself some data for robots and doors.  Obviously this code
+	//	this code must go away.  I just want to show you how to display the information
+	//	about a robot-box pair or a door.
+	//	Important here:  I don't think of the locations (robot/box/door) as x and y, but
+	//	as row and column.  So, the first index is a row (y) coordinate, and the second
+	//	index is a column (x) coordinate.
+
 
 
 	//	normally, here I would initialize the location of my doors, boxes,
@@ -84,7 +177,7 @@ void displayGridPane(void)
 	{
 		//	here I would test if the robot thread is still live
 		//						row				column			row			column
-		drawRobotAndBox(i, robotLoc[i][0], robotLoc[i][1], boxLoc[i][0], boxLoc[i][1], doorAssign[i]);
+		drawRobotAndBox((*robots)[i]->robotNum, (*robots)[i]->robotRow, (*robots)[i]->robotCol, (*robots)[i]->boxRow, (*robots)[i]->boxCol, (*robots)[i]->doorNum);
 	}
 
 	for (int i=0; i<numDoors; i++)
@@ -95,7 +188,6 @@ void displayGridPane(void)
 	}
 
 	moveBox();
-
 
 	//	This call does nothing important. It only draws lines
 	//	There is nothing to synchronize here
@@ -162,53 +254,153 @@ void slowdownRobots(void)
 
 
 
-
-//------------------------------------------------------------------------
-//	You shouldn't have to change anything in the main function besides
-//	the initialization of numRows, numCos, numDoors, numBoxes.
-//------------------------------------------------------------------------
-int main(int argc, char** argv)
+void moveBox(void)
 {
-	//	We know that the arguments  of the program  are going
-	//	to be the width (number of columns) and height (number of rows) of the
-	//	grid, the number of boxes (and robots), and the number of doors.
-	//	You are going to have to extract these.  For the time being,
-	//	I hard code-some values
-	numRows = atoi(argv[1]);
-	numCols = atoi(argv[2]);
-	numDoors = atoi(argv[3]);
-	numBoxes = atoi(argv[4]);
-
-	//	Even though we extracted the relevant information from the argument
-	//	list, I still need to pass argc and argv to the front-end init
-	//	function because that function passes them to glutInit, the required call
-	//	to the initialization of the glut library.
-	initializeFrontEnd(argc, argv, displayGridPane, displayStatePane);
-	
-	//	Now we can do application-level initialization
-	initializeApplication();
-
-	//	Now we enter the main loop of the program and to a large extend
-	//	"lose control" over its execution.  The callback functions that 
-	//	we set up earlier will be called when the corresponding event
-	//	occurs
-	glutMainLoop();
-	
-	//	Free allocated resource before leaving (not absolutely needed, but
-	//	just nicer.  Also, if you crash there, you know something is wrong
-	//	in your code.
-	for (int i=0; i< numRows; i++)
-		free(grid[i]);
-	free(grid);
-	for (int k=0; k<MAX_NUM_MESSAGES; k++)
-		free(message[k]);
-	free(message);
-
-	
-	//	This will probably never be executed (the exit point will be in one of the
-	//	call back functions).
-	return 0;
+	for(int i = 0; i < numBoxes; i++)
+	{
+		// Box is not in the x position of the door
+		if((*robots)[i]->boxCol != (*robots)[i]->doorCol)
+		{
+			// Box is to the left of the door
+			if((*robots)[i]->doorCol - (*robots)[i]->boxCol < 0)
+			{
+				// Robot is not on the right side of the box
+				if((*robots)[i]->robotCol != (*robots)[i]->boxCol + 1)
+				{
+					// Move robot to the East
+					if((*robots)[i]->robotCol > (*robots)[i]->boxCol + 1)
+						(*robots)[i]->robotCol--;
+					// Move robot to the West
+					else
+						(*robots)[i]->robotCol++;
+				}
+				// Robot is on the right side of the box
+				else
+				{
+					// Robot is not on same y position, so move it to that position
+					if((*robots)[i]->robotRow < (*robots)[i]->boxRow)
+						// Robot moves South
+						(*robots)[i]->robotRow++;
+					else if ((*robots)[i]->robotRow > (*robots)[i]->boxRow)
+						// Robot moves North
+						(*robots)[i]->robotRow--;
+					// Move the box and the robot, they are now both in correct spot
+					else
+					{
+						// Push the box West
+						(*robots)[i]->robotCol--;
+						(*robots)[i]->boxCol--;
+					}
+				}
+			}
+			// Box is to the right of the door
+			else
+			{
+				// Robot is not on the left side of the box
+				if((*robots)[i]->robotCol != (*robots)[i]->boxCol - 1)
+				{
+					// Move robot to the West
+					if((*robots)[i]->robotCol > (*robots)[i]->boxCol - 1)
+						(*robots)[i]->robotCol--;
+					// Move robot to the East
+					else
+						(*robots)[i]->robotCol++;
+				}
+				// Robot is on the left side of the box
+				else
+				{
+					// Robot is not aligned with y, so do that
+					if((*robots)[i]->robotRow < (*robots)[i]->boxRow)
+						// Move robot North
+						(*robots)[i]->robotRow++;
+					else if ((*robots)[i]->robotRow > (*robots)[i]->boxRow)
+						// Move robot South
+						(*robots)[i]->robotRow--;
+					// Move the box
+					else
+					{
+						// Move the box to the East
+						(*robots)[i]->robotCol++;
+						(*robots)[i]->boxCol++;
+					}
+				}
+			}
+		}
+		else if( (*robots)[i]->boxRow != (*robots)[i]->doorRow)
+		{
+			// Box is above the door
+			if((*robots)[i]->doorRow - (*robots)[i]->boxRow < 0)
+			{
+				// Robot is not above the box
+				if((*robots)[i]->robotRow != (*robots)[i]->boxRow - 1)
+				{
+					// Move robot North
+					if((*robots)[i]->robotRow > (*robots)[i]->boxRow - 1)
+						(*robots)[i]->robotRow--;
+					// Move robot South
+					else
+						(*robots)[i]->robotRow++;
+				}
+				// Robot is in right y position
+				else
+				{
+					// Robot is not on same x position, so move it to that position
+					if((*robots)[i]->robotCol < (*robots)[i]->boxCol)
+						// Moving the robot East
+						(*robots)[i]->robotCol++;
+					else if ((*robots)[i]->robotCol > (*robots)[i]->boxCol)
+						// Moving the West
+						(*robots)[i]->robotCol--;
+					// Move the box and the robot, they are now both in correct spot
+					else
+					{
+						// Moving the box North
+						(*robots)[i]->robotRow--;
+						(*robots)[i]->boxRow--;
+					}
+				}
+			}
+			// Box is below the door
+			else
+			{
+				// Robot is not below
+				if((*robots)[i]->robotRow != (*robots)[i]->boxRow + 1)
+				{
+					// Move robot to the left
+					if((*robots)[i]->robotRow > (*robots)[i]->boxRow + 1)
+						// Moving the robot West
+						(*robots)[i]->robotRow--;
+					// Move robot to the right
+					else
+						// Moving robot East
+						(*robots)[i]->robotRow++;
+				}
+				// Robot is on the left side of the box
+				else
+				{
+					// Robot is not aligned with y, so do that
+					if((*robots)[i]->robotCol < (*robots)[i]->boxCol)
+						// Move robot South
+						(*robots)[i]->robotCol++;
+					else if ((*robots)[i]->robotCol > (*robots)[i]->boxCol)
+						// Move robot North
+						(*robots)[i]->robotCol--;
+					// Move the box
+					else
+					{
+						// Moving the box South
+						(*robots)[i]->robotRow++;
+						(*robots)[i]->boxRow++;
+					}
+				}
+			}
+		}
+	}
 }
+
+
+
+
 
 
 //==================================================================================
@@ -216,6 +408,7 @@ int main(int argc, char** argv)
 //	This is a part that you have to edit and add to.
 //
 //==================================================================================
+
 
 
 void initializeApplication(void)
@@ -239,182 +432,135 @@ void initializeApplication(void)
 
 	//	seed the pseudo-random generator
 	srand((unsigned int) time(NULL));
-	robotLoc = (int **) malloc(numBoxes * sizeof(int *));
+
 	for(int i = 0; i < numBoxes; i++)
 	{
-		robotLoc[i] = (int *) malloc(2 * sizeof(int));
-		robotLoc[i][0] = rand() % numRows - 1;
-		robotLoc[i][1] = rand() % numCols - 1;
+		// Initialize struct values of each robot
+		(*robots)[i]->robotNum = i;
+		(*robots)[i]->robotRow = rand() % numRows-1;
+		(*robots)[i]->robotCol = rand() % numCols-1;
+		(*robots)[i]->doorNum = (rand() % numDoors);
+		(*robots)[i]->boxRow = (rand() % ((numRows - 1) - 2 + 1)) + 1;
+		(*robots)[i]->boxCol = (rand() % ((numCols - 1) - 2 + 1)) + 1;
 
-		//printf("Robot Row: %d\t Col: %d\n", robotLoc[i][0], robotLoc[i][1]);
 	}
 
-	boxLoc = (int **) malloc(numBoxes * sizeof(int *));
-	for(int i = 0; i < numBoxes; i++)
-	{
-		boxLoc[i] = (int *) malloc(2 * sizeof(int));
-		boxLoc[i][0] = (rand() % ((numRows - 1) - 2 + 1)) + 1;
-		boxLoc[i][1] = (rand() % ((numCols - 1) - 2 + 1)) + 1;
-		//printf("Box Row: %d\t Col: %d\n", boxLoc[i][0], boxLoc[i][1]);
-	}
-
-	doorAssign = (int *) malloc(numBoxes * sizeof(int));
-	for(int i = 0; i < numBoxes; i++)
-	{
-		doorAssign[i] = (rand() % numDoors);
-		//printf("Col: %d\n", doorAssign[i]);
-	}
-
+	//Initialize locations of all the doors
 	doorLoc = (int **) malloc(numDoors * sizeof(int *));
 	for(int i = 0; i < numDoors; i++)
 	{
 		doorLoc[i] = (int *) malloc(2 * sizeof(int));
 		doorLoc[i][0] = rand() % numRows;
 		doorLoc[i][1] = rand() % numCols;
-		//printf("Door Row: %d\t Col: %d\n", doorLoc[i][0], doorLoc[i][1]);
 	}
-}
 
-void moveBox(void)
-{
-	for(int i = 0; i < numBoxes; i++)
+	//Store the location of the robot's destination door
+	for(int j = 0; j < numBoxes; j++)
 	{
-		// Box is not in the x position of the door
-		if(boxLoc[i][1] != doorLoc[doorAssign[i]][1])
+		for(int i = 0; i < numDoors; i++)
 		{
-			// Box is to the left of the door
-			if(doorLoc[doorAssign[i]][1] - boxLoc[i][1] < 0)
+			if((*robots)[j]->doorNum == i)
 			{
-				// Robot is not on the right side of the box
-				if(robotLoc[i][1] != boxLoc[i][1] + 1)
-				{
-					// Move robot to the right
-					if(robotLoc[i][1] > boxLoc[i][1] + 1)
-						robotLoc[i][1]--;
-					// Move robot to the left
-					else
-						robotLoc[i][1]++;
-				}
-				// Robot is on the right side of the box
-				else
-				{
-					// Robot is not on same y position, so move it to that position
-					if(robotLoc[i][0] < boxLoc[i][0])
-						robotLoc[i][0]++;
-					else if (robotLoc[i][0] > boxLoc[i][0])
-						robotLoc[i][0]--;
-					// Move the box and the robot, they are now both in correct spot
-					else
-					{
-						robotLoc[i][1]--;
-						boxLoc[i][1]--;
-					}
-				}
-			}
-			// Box is to the right of the door
-			else
-			{
-				// Robot is not on the left side of the box
-				if(robotLoc[i][1] != boxLoc[i][1] - 1)
-				{
-					// Move robot to the left
-					if(robotLoc[i][1] > boxLoc[i][1] - 1)
-						robotLoc[i][1]--;
-					// Move robot to the right
-					else
-						robotLoc[i][1]++;
-				}
-				// Robot is on the left side of the box
-				else
-				{
-					// Robot is not aligned with y, so do that
-					if(robotLoc[i][0] < boxLoc[i][0])
-						robotLoc[i][0]++;
-					else if (robotLoc[i][0] > boxLoc[i][0])
-						robotLoc[i][0]--;
-					// Move the box
-					else
-					{
-						robotLoc[i][1]++;
-						boxLoc[i][1]++;
-					}
-				}
-			}
-		}
-		else if( boxLoc[i][0] != doorLoc[doorAssign[i]][0])
-		{
-			// Box is above the door
-			if(doorLoc[doorAssign[i]][0] - boxLoc[i][0] < 0)
-			{
-				// Robot is not above the box
-				if(robotLoc[i][0] != boxLoc[i][0] - 1)
-				{
-					// Move robot down
-					if(robotLoc[i][0] > boxLoc[i][0] - 1)
-						robotLoc[i][0]--;
-					// Move robot up
-					else
-						robotLoc[i][0]++;
-				}
-				// Robot is in right y position
-				else
-				{
-					// Robot is not on same x position, so move it to that position
-					if(robotLoc[i][1] < boxLoc[i][1])
-						robotLoc[i][1]++;
-					else if (robotLoc[i][1] > boxLoc[i][1])
-						robotLoc[i][1]--;
-					// Move the box and the robot, they are now both in correct spot
-					else
-					{
-						robotLoc[i][0]--;
-						boxLoc[i][0]--;
-					}
-				}
-			}
-			// Box is below the door
-			else
-			{
-				// Robot is not below
-				if(robotLoc[i][0] != boxLoc[i][0] + 1)
-				{
-					// Move robot to the left
-					if(robotLoc[i][0] > boxLoc[i][0] + 1)
-						robotLoc[i][0]--;
-					// Move robot to the right
-					else
-						robotLoc[i][0]++;
-				}
-				// Robot is on the left side of the box
-				else
-				{
-					// Robot is not aligned with y, so do that
-					if(robotLoc[i][1] < boxLoc[i][1])
-						robotLoc[i][1]++;
-					else if (robotLoc[i][1] > boxLoc[i][1])
-						robotLoc[i][1]--;
-					// Move the box
-					else
-					{
-						robotLoc[i][0]++;
-						boxLoc[i][0]++;
-					}
-				}
+				(*robots)[j]->doorRow = doorLoc[i][0];
+				(*robots)[j]->doorCol = doorLoc[i][1];
 			}
 		}
 	}
+
+
+	//Allocate memory for outputFolder name
+	char outputFolder[128];
+	snprintf(outputFolder, sizeof(outputFolder), "%s/%s", ".", "Output" );
+
+
+	//if an Output folder hasn't been created yet	
+	struct stat outputExists = {0};
+	if(stat(outputFolder, &outputExists) == -1)
+	{
+
+		//creates a new output folder with read write and execute permissions enabled for the user
+		mkdir(outputFolder, 0700);
+
+		//Create a new text file to write output
+		FILE *fp = NULL;
+		fp = fopen("robotSimulOut.txt", "w");
+		fclose(fp);
+	} 
+	//Output folder exists
+	else 
+	{
+		//opens the text file already present within the Output folder
+		FILE *fp = NULL;
+		char resultFilePath[128];
+		snprintf(resultFilePath, sizeof(resultFilePath), "%s/%s", outputFolder, "robotSimulOut.txt");
+			
+		printf("File path: %s", resultFilePath);
+		//append to result text file
+		fp = fopen(resultFilePath, "w");
+		
+		int lineNum = 1;
+
+		//	(Input Params + Line) + (numDoors + line) + (numBoxes + line) + (numRobots=numBoxes + line)
+		int initialLineCount = 2 + (numDoors + 1) + 2*(numBoxes + 1); 
+
+		while(lineNum < initialLineCount)
+		{
+			if(lineNum % 2 == 0 && lineNum < initialLineCount)
+			{
+				fprintf(fp, "\n");
+				lineNum++;
+			}
+			else
+			{
+				switch(lineNum)
+				{
+					//Dimensions of window
+					case PARAMS:
+						fprintf(fp, "Input Parameters: \tNumber of Rows: %d Number of Columns: %d Number of Boxes: %d Number of Doors: %d Number of Robots %d\n", numRows, numCols, numDoors, numBoxes, numBoxes);
+						break;
+
+					// Doors will always be printed on line 3
+					case DOORS:
+						while( lineNum < DOORS + numDoors)
+						{
+							fprintf(fp, "Door %d spawned at (row %d, column %d)\n", (lineNum - DOORS), doorLoc[lineNum - DOORS][0], doorLoc[lineNum - DOORS][1]);
+							lineNum++;
+						}
+						lineNum -= numDoors;
+						break;
+					
+					//Boxes
+					case BOXES:
+						while( lineNum < BOXES + numBoxes)
+						{
+							fprintf(fp, "Box %d spawned at (row %d, column %d)\n", (*robots)[lineNum - BOXES]->robotNum, (*robots)[lineNum - BOXES]->boxRow, (*robots)[lineNum - BOXES]->boxCol);
+							lineNum++;
+						}
+						lineNum -= numBoxes;
+					    break;
+					
+					//Write initial spawn points of robots and their destination doors
+					case ROBOTS:
+						while( lineNum < ROBOTS + numBoxes)
+						{
+							fprintf(fp, "Robot %d spawned at (row %d, column %d) with destination door %d\n", (*robots)[lineNum - ROBOTS]->robotNum, (*robots)[lineNum - ROBOTS]->robotRow, (*robots)[lineNum - ROBOTS]->robotCol, (*robots)[lineNum - ROBOTS]->doorNum);
+							lineNum++;
+						}
+						lineNum += numDoors + 2*numBoxes;
+					    break;
+
+				}//end switch 
+				lineNum++;
+			}
+
+		}
+
+		fclose(fp);
+	}
+
+
+
+
+
 }
-
-void moveRobot(void)
-{
-	
-}
-
-
-
-
-
-
-
-
 
