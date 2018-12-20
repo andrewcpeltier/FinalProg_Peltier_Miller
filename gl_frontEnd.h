@@ -42,10 +42,9 @@
 //	you get left turn from dir as (dir + 1) % NUM_TRAVEL_DIRECTIONS
 typedef enum Direction {
 								NORTH = 0,
-								WEST = 1,
-								SOUTH = 2,
-								EAST = 3,
-								END = 4,
+								WEST,
+								SOUTH,
+								EAST,
 								//
 								NUM_TRAVEL_DIRECTIONS
 } Direction;

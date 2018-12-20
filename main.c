@@ -9,12 +9,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <dirent.h>
-#include <pthread.h>
-#include <string.h>	        //	for memcpy
+
 #include <sys/stat.h>	//stat struct used for program output
-#include <dirent.h>	
-#include <sys/types.h>		//  for gettid() on Linux	
-#include <unistd.h>			//  for usleep()
+#include <dirent.h>		
 //
 #include "gl_frontEnd.h"
 
@@ -22,25 +19,19 @@
 #define DOORS 3
 #define BOXES 5
 #define ROBOTS 7
-#define PUSH 9
 
-/**
- * Struct used to store all of the information required for a robot
- * (controlled by a thread) to push it's designated box to it's 
- * destination door.
- */ 
 struct robot
 {
-	pthread_t robotThread;	//The pthread designated to the robot represented by this struct
-	int robotNum,			//The number of the robot
-		robotRow,			//The robot's row
-		robotCol,			//The robot's column
-		boxRow,				//The row of the box to be pushed the robot
-		boxCol,				//The column of the box to be pushed by the robot
-		doorNum,			//The door designated to the robot
-		doorRow,			//The row of the robot's destination door
-		doorCol,			//The column of the robot's destination door
-		reached;			//0 if the box has yet to reach the door, 1 otherwise
+	int robotNum,
+		robotRow,
+		robotCol,
+		boxRow,
+		boxCol,
+		doorNum,
+		doorRow,
+		doorCol,
+		reached;
+	char *path;
 }; 
 
 
@@ -50,22 +41,8 @@ struct robot
 void displayGridPane();
 void displayStatePane(void);
 void initializeApplication(void);
+void moveBox(void);
 
-/**
- * Function called upon creation of a thread to move each robot's box
- * to it's assigned door.
- * @param	void *argument	The robot struct passed during thread creation
- */ 
-void* moveBox(void *argument);
-
-/**
- * Function used to print the direction a box is pushed or moved
- * by a robot. Also used to print when the box has reached it's destination.
- * @param	int robotNum			The number of the robot performing the movement
- * @param	Direction direction		Enum type defined in gl_frontEnd.h to indicate cardinal directions
- * @param	int isPushed			0 if the box is moved, 1 if the box is pushed
- */ 
-void printMovement(int robotNum, Direction direction, int isPushed);
 
 //==================================================================================
 //	Application-level global variables
@@ -89,8 +66,7 @@ int numLiveThreads = 0;		//	the number of live robot threads
 
 //	robot sleep time between moves (in microseconds)
 const int MIN_SLEEP_TIME = 1000;
-// int robotSleepTime = 100000;
-int robotSleepTime = 1000;
+int robotSleepTime = 100000;
 
 //	An array of C-string where you can store things you want displayed
 //	in the state pane to display (for debugging purposes?)
@@ -106,10 +82,6 @@ int **doorLoc;
 
 struct robot *myRobots[1024];
 struct robot *(*robots)[] = &myRobots;
-
-int liveThreads;
-
-pthread_mutex_t fileLock;
 
 FILE *fp = NULL;
 //==================================================================================
@@ -135,7 +107,6 @@ int main(int argc, char** argv)
 	numDoors = atoi(argv[3]);
 	numBoxes = atoi(argv[4]);
 
-	numLiveThreads = numBoxes;
 
 
 	//	Even though we extracted the relevant information from the argument
@@ -149,8 +120,6 @@ int main(int argc, char** argv)
 	{
 		myRobots[i] = malloc(sizeof(struct robot));
 	}
-
-
 
 	//	Now we can do application-level initialization
 	initializeApplication();
@@ -224,20 +193,7 @@ void displayGridPane()
 		drawDoor(i, doorLoc[i][0], doorLoc[i][1]);
 	}
 
-	//Create a thread specific to each robot
-	for(int i = 0; i < numBoxes; i++)
-	{
-		//Create a thread, store it in the robots struct and call moveBox with the current robot as the parameter
-		int result = pthread_create(&(*robots)[i]->robotThread, NULL, &moveBox, (*robots)[i]);
-
-		//error handling, written by Professor Jean-Yves Hervé
-		if (result != 0)
-		{
-			printf ("could not pthread_create thread %d. %d/%s\n",
-					i, result, strerror(result));
-			exit (EXIT_FAILURE);
-		}
-	}
+	moveBox();
 
 	//	This call does nothing important. It only draws lines
 	//	There is nothing to synchronize here
@@ -303,282 +259,209 @@ void slowdownRobots(void)
 }
 
 
-void printMovement(int robotNum, Direction direction, int isPushed)
-{
-	//lock the file
-	pthread_mutex_lock(&fileLock);
 
-	//Switch case dependent on cardinal direction of movement
-	switch(direction)
+void moveBox(void)
+{
+	for(int i = 0; i < numBoxes; i++)
 	{
-		//box moved/pushed north
-		case NORTH:
+		// Box is not in the x position of the door
+		if((*robots)[i]->boxCol != (*robots)[i]->doorCol)
 		{
-			if(!isPushed)
-				fprintf(fp, "robot %d move N\n", robotNum);
-			else
-				fprintf(fp, "robot %d push N\n", robotNum);
-		}
-		break;
-
-		//box moved/pushed west
-		case WEST:
-		{
-			if(!isPushed)
-				fprintf(fp, "robot %d move W\n", robotNum);
-			else
-				fprintf(fp, "robot %d push W\n", robotNum);
-		}
-		break;
-
-		//box moved/pushed east
-		case EAST:
-		{
-			if(!isPushed)
-				fprintf(fp, "robot %d move E\n", robotNum);
-			else
-				fprintf(fp, "robot %d push E\n", robotNum);
-		}
-		break;
-		
-		//box moved/pushed south
-		case SOUTH:
-		{
-			if(!isPushed)
-				fprintf(fp, "robot %d move S\n", robotNum);
-			else
-				fprintf(fp, "robot %d push N\n", robotNum);
-		}
-		break;
-
-		//box is at destination
-		case END:
-		{
-			fprintf(fp, "robot %d end\n", robotNum);
-		}
-		break;
-
-		default:
-			break;
-	}
-
-	//unlock the file
-	pthread_mutex_unlock(&fileLock);
-}
-
-
-void* moveBox(void *argument) 
-{
-		//Define the argument to be a robot struct for the current thread
-		struct robot *robotThread = argument;
-
-		//If the robot has yet to push the box to the door
-		if(!robotThread->reached)
-		{
-			// Box is not in the x position of the door
-			if(robotThread->boxCol != robotThread->doorCol)
+			// Box is to the left of the door
+			if((*robots)[i]->doorCol - (*robots)[i]->boxCol < 0)
 			{
-				// Box is to the left of the door
-				if(robotThread->doorCol - robotThread->boxCol < 0)
+				// Robot is not on the right side of the box
+				if((*robots)[i]->robotCol != (*robots)[i]->boxCol + 1)
 				{
-					// Robot is not on the right side of the box
-					if(robotThread->robotCol != robotThread->boxCol + 1)
+					// Move robot to the East
+					if((*robots)[i]->robotCol > (*robots)[i]->boxCol + 1)
 					{
-						// Move robot to the East
-						if(robotThread->robotCol > robotThread->boxCol + 1)
-						{
-							printMovement(robotThread->robotNum, EAST, 0);
-							robotThread->robotCol--;
-						}
-						// Move robot to the West
-						else
-						{
-							printMovement(robotThread->robotNum, WEST, 0);
-							robotThread->robotCol++;
-						}
+						fprintf(fp, "robot %d move E\n", i);
+						(*robots)[i]->robotCol--;
 					}
-					// Robot is on the right side of the box
+					// Move robot to the West
 					else
 					{
-						// Robot is not on same y position, so move it to that position
-						if(robotThread->robotRow < robotThread->boxRow)
-						{
-							// Robot moves South
-							printMovement(robotThread->robotNum, SOUTH, 0);
-							robotThread->robotRow++;
-						}
-						else if (robotThread->robotRow > robotThread->boxRow)
-						{
-							// Robot moves North
-							printMovement(robotThread->robotNum, NORTH, 0);
-							robotThread->robotRow--;
-						}
-						// Move the box and the robot, they are now both in correct spot
-						else
-						{
-							// Push the box West
-							printMovement(robotThread->robotNum, WEST, 1);
-							robotThread->robotCol--;
-							robotThread->boxCol--;
-						}
+						fprintf(fp, "robot %d move W\n", i);
+						(*robots)[i]->robotCol++;
 					}
 				}
-				// Box is to the right of the door
+				// Robot is on the right side of the box
 				else
 				{
-					// Robot is not on the left side of the box
-					if(robotThread->robotCol != robotThread->boxCol - 1)
+					// Robot is not on same y position, so move it to that position
+					if((*robots)[i]->robotRow < (*robots)[i]->boxRow)
 					{
-						// Move robot to the West
-						if(robotThread->robotCol > robotThread->boxCol - 1)
-						{
-							printMovement(robotThread->robotNum, WEST, 0);
-							robotThread->robotCol--;
-						}
-						// Move robot to the East
-						else
-						{
-							printMovement(robotThread->robotNum, EAST, 0);
-							robotThread->robotCol++;
-						}
+						// Robot moves South
+						fprintf(fp, "robot %d move S\n", i);
+						(*robots)[i]->robotRow++;
 					}
-					// Robot is on the left side of the box
+					else if ((*robots)[i]->robotRow > (*robots)[i]->boxRow)
+					{
+						// Robot moves North
+						fprintf(fp, "robot %d move N\n", i);
+						(*robots)[i]->robotRow--;
+					}
+					// Move the box and the robot, they are now both in correct spot
 					else
 					{
-						// Robot is not aligned with y, so do that
-						if(robotThread->robotRow < robotThread->boxRow)
-						{
-							// Move robot North
-							printMovement(robotThread->robotNum, NORTH, 0);
-							robotThread->robotRow++;
-						}
-						else if (robotThread->robotRow > robotThread->boxRow)
-						{
-							// Move robot South
-							printMovement(robotThread->robotNum, SOUTH, 0);
-							robotThread->robotRow--;
-						}
-						// Move the box
-						else
-						{
-							// Move the box to the East
-							printMovement(robotThread->robotNum, EAST, 1);
-							robotThread->robotCol++;
-							robotThread->boxCol++;
-						}
+						// Push the box West
+						fprintf(fp, "robot %d push W\n", i);
+						(*robots)[i]->robotCol--;
+						(*robots)[i]->boxCol--;
 					}
 				}
 			}
-			else if( robotThread->boxRow != robotThread->doorRow)
+			// Box is to the right of the door
+			else
 			{
-				// Box is above the door
-				if(robotThread->doorRow - robotThread->boxRow < 0)
+				// Robot is not on the left side of the box
+				if((*robots)[i]->robotCol != (*robots)[i]->boxCol - 1)
 				{
-					// Robot is not above the box
-					if(robotThread->robotRow != robotThread->boxRow + 1)
+					// Move robot to the West
+					if((*robots)[i]->robotCol > (*robots)[i]->boxCol - 1)
+					{
+						fprintf(fp, "robot %d move W\n", i);
+						(*robots)[i]->robotCol--;
+					}
+					// Move robot to the East
+					else
+					{
+						fprintf(fp, "robot %d move E\n", i);
+						(*robots)[i]->robotCol++;
+					}
+				}
+				// Robot is on the left side of the box
+				else
+				{
+					// Robot is not aligned with y, so do that
+					if((*robots)[i]->robotRow < (*robots)[i]->boxRow)
 					{
 						// Move robot North
-						if(robotThread->robotRow > robotThread->boxRow + 1)
-						{
-							printMovement(robotThread->robotNum, NORTH, 0);
-							robotThread->robotRow--;
-						}
+						fprintf(fp, "robot %d move N\n", i);
+						(*robots)[i]->robotRow++;
+					}
+					else if ((*robots)[i]->robotRow > (*robots)[i]->boxRow)
+					{
 						// Move robot South
-						else
-						{
-							printMovement(robotThread->robotNum, SOUTH, 0);
-							robotThread->robotRow++;
-						}
+						fprintf(fp, "robot %d move S\n", i);
+						(*robots)[i]->robotRow--;
 					}
-					// Robot is in right y position
+					// Move the box
 					else
 					{
-						// Robot is not on same x position, so move it to that position
-						if(robotThread->robotCol < robotThread->boxCol)
-						{
-							// Moving the robot East
-							printMovement(robotThread->robotNum, EAST, 0);
-							robotThread->robotCol++;
-						}
-						else if (robotThread->robotCol > robotThread->boxCol)
-						{
-							// Moving the West
-							printMovement(robotThread->robotNum, WEST, 0);
-							robotThread->robotCol--;
-						}
-						// Move the box and the robot, they are now both in correct spot
-						else
-						{
-							// Moving the box North
-							printMovement(robotThread->robotNum, NORTH, 1);
-							robotThread->robotRow--;
-							robotThread->boxRow--;
-						}
+						// Move the box to the East
+						fprintf(fp, "robot %d push E\n", i);
+						(*robots)[i]->robotCol++;
+						(*robots)[i]->boxCol++;
 					}
-				}
-				// Box is below the door
-				else
-				{
-					// Robot is not below
-					if(robotThread->robotRow != robotThread->boxRow - 1)
-					{
-						// Move robot to the left
-						if(robotThread->robotRow > robotThread->boxRow - 1)
-						{
-							// Moving the robot West
-							printMovement(robotThread->robotNum, WEST, 0);
-							robotThread->robotRow--;
-						}
-						// Move robot to the right
-						else
-						{
-							// Moving robot East
-							printMovement(robotThread->robotNum, EAST, 0);
-							robotThread->robotRow++;
-						}
-					}
-					// Robot is on the left side of the box
-					else
-					{
-						// Robot is not aligned with y, so do that
-						if(robotThread->robotCol < robotThread->boxCol)
-						{
-							// Move robot South
-							printMovement(robotThread->robotNum, SOUTH, 0);
-							robotThread->robotCol++;
-						}
-						else if (robotThread->robotCol > robotThread->boxCol)
-						{
-							// Move robot North
-							printMovement(robotThread->robotNum, NORTH, 0);
-							robotThread->robotCol--;
-						}
-						// Move the box
-						else
-						{
-							// Moving the box South
-							printMovement(robotThread->robotNum, SOUTH, 1);
-							robotThread->robotRow++;
-							robotThread->boxRow++;
-						}
-					}
-				}
-			}
-			else	//The door has been reached
-			{	
-				//If the reached value in the struct is still 0
-				if(!robotThread->reached)
-				{
-					printMovement(robotThread->robotNum, END, 0);
-					//flip the bool
-					robotThread->reached = 1;
-					//decrement live threads
-					numLiveThreads--;
 				}
 			}
 		}
-		
-	return NULL;
+		else if( (*robots)[i]->boxRow != (*robots)[i]->doorRow)
+		{
+			// Box is above the door
+			if((*robots)[i]->doorRow - (*robots)[i]->boxRow < 0)
+			{
+				// Robot is not above the box
+				if((*robots)[i]->robotRow != (*robots)[i]->boxRow + 1)
+				{
+					// Move robot North
+					if((*robots)[i]->robotRow > (*robots)[i]->boxRow + 1)
+					{
+						fprintf(fp, "robot %d move N\n", i);
+						(*robots)[i]->robotRow--;
+					}
+					// Move robot South
+					else
+					{
+						fprintf(fp, "robot %d move S\n", i);
+						(*robots)[i]->robotRow++;
+					}
+				}
+				// Robot is in right y position
+				else
+				{
+					// Robot is not on same x position, so move it to that position
+					if((*robots)[i]->robotCol < (*robots)[i]->boxCol)
+					{
+						// Moving the robot East
+						fprintf(fp, "robot %d move E\n", i);
+						(*robots)[i]->robotCol++;
+					}
+					else if ((*robots)[i]->robotCol > (*robots)[i]->boxCol)
+					{
+						// Moving the West
+						fprintf(fp, "robot %d move W\n", i);
+						(*robots)[i]->robotCol--;
+					}
+					// Move the box and the robot, they are now both in correct spot
+					else
+					{
+						// Moving the box North
+						fprintf(fp, "robot %d push N\n", i);
+						(*robots)[i]->robotRow--;
+						(*robots)[i]->boxRow--;
+					}
+				}
+			}
+			// Box is below the door
+			else
+			{
+				// Robot is not below
+				if((*robots)[i]->robotRow != (*robots)[i]->boxRow - 1)
+				{
+					// Move robot to the left
+					if((*robots)[i]->robotRow > (*robots)[i]->boxRow - 1)
+					{
+						// Moving the robot West
+						fprintf(fp, "robot %d move W\n", i);
+						(*robots)[i]->robotRow--;
+					}
+					// Move robot to the right
+					else
+					{
+						// Moving robot East
+						fprintf(fp, "robot %d move E\n", i);
+						(*robots)[i]->robotRow++;
+					}
+				}
+				// Robot is on the left side of the box
+				else
+				{
+					// Robot is not aligned with y, so do that
+					if((*robots)[i]->robotCol < (*robots)[i]->boxCol)
+					{
+						// Move robot South
+						fprintf(fp, "robot %d move S\n", i);
+						(*robots)[i]->robotCol++;
+					}
+					else if ((*robots)[i]->robotCol > (*robots)[i]->boxCol)
+					{
+						// Move robot North
+						fprintf(fp, "robot %d move N\n", i);
+						(*robots)[i]->robotCol--;
+					}
+					// Move the box
+					else
+					{
+						// Moving the box South
+						fprintf(fp, "robot %d push S\n", i);
+						(*robots)[i]->robotRow++;
+						(*robots)[i]->boxRow++;
+					}
+				}
+			}
+		}
+		else
+		{
+			if(!(*robots)[i]->reached)
+			{
+				fprintf(fp, "robot %d end\n", i);
+				(*robots)[i]->reached = 1;
+			}
+		}
+	}
 }
 
 
@@ -605,21 +488,18 @@ void initializeApplication(void)
 	message = (char**) malloc(MAX_NUM_MESSAGES*sizeof(char*));
 	for (int k=0; k<MAX_NUM_MESSAGES; k++)
 		message[k] = (char*) malloc((MAX_LENGTH_MESSAGE+1)*sizeof(char));
+		
+	//---------------------------------------------------------------
+	//	All the code below to be replaced/removed
+	//	I initialize the grid's pixels to have something to look at
+	//---------------------------------------------------------------
+	//	Yes, I am using the C random generator after ranting in class that the C random
+	//	generator was junk.  Here I am not using it to produce "serious" data (as in a
+	//	simulation), only some color, in meant-to-be-thrown-away code
 
 	//	seed the pseudo-random generator
 	srand((unsigned int) time(NULL));
 
-
-	//Initialize locations of all the doors
-	doorLoc = (int **) malloc(numDoors * sizeof(int *));
-	for(int i = 0; i < numDoors; i++)
-	{
-		doorLoc[i] = (int *) malloc(2 * sizeof(int));
-		doorLoc[i][0] = rand() % numRows;
-		doorLoc[i][1] = rand() % numCols;
-	}
-
-	//Initialize the robot structs, numRobots = numBoxes
 	for(int i = 0; i < numBoxes; i++)
 	{
 		// Initialize struct values of each robot
@@ -631,16 +511,31 @@ void initializeApplication(void)
 		(*robots)[i]->boxRow = (rand() % ((numRows - 1) - 2 + 1)) + 1;
 		(*robots)[i]->boxCol = (rand() % ((numCols - 1) - 2 + 1)) + 1;
 
-		//Store the location of the robot's destination door
-		for(int j = 0; j < numDoors; j++)
+	}
+
+	//Initialize locations of all the doors
+	doorLoc = (int **) malloc(numDoors * sizeof(int *));
+	for(int i = 0; i < numDoors; i++)
+	{
+		doorLoc[i] = (int *) malloc(2 * sizeof(int));
+		doorLoc[i][0] = rand() % numRows;
+		doorLoc[i][1] = rand() % numCols;
+	}
+
+	//Store the location of the robot's destination door
+	for(int j = 0; j < numBoxes; j++)
+	{
+		for(int i = 0; i < numDoors; i++)
 		{
-			if((*robots)[i]->doorNum == j)
+			if((*robots)[j]->doorNum == i)
 			{
-				(*robots)[i]->doorRow = doorLoc[j][0];
-				(*robots)[i]->doorCol = doorLoc[j][1];
+				(*robots)[j]->doorRow = doorLoc[i][0];
+				(*robots)[j]->doorCol = doorLoc[i][1];
 			}
 		}
 	}
+
+
 	//Allocate memory for outputFolder name
 	char outputFolder[128];
 	snprintf(outputFolder, sizeof(outputFolder), "%s/%s", ".", "Output" );
@@ -655,6 +550,7 @@ void initializeApplication(void)
 		mkdir(outputFolder, 0700);
 
 		//Create a new text file to write output
+		// FILE *fp = NULL;
 		fp = fopen("robotSimulOut.txt", "w");
 		fclose(fp);
 	} 
@@ -670,78 +566,61 @@ void initializeApplication(void)
 		//append to result text file
 		fp = fopen(resultFilePath, "w");
 		
-		//line counter
 		int lineNum = 1;
 
 		//	(Input Params + Line) + (numDoors + line) + (numBoxes + line) + (numRobots=numBoxes + line)
 		int initialLineCount = 2 + (numDoors + 1) + 2*(numBoxes + 1); 
 
-		//Loop while there is still initial information to be written to the outfile
 		while(lineNum < initialLineCount)
 		{
-			//If the lineNumber is even print a blank line
 			if(lineNum % 2 == 0 && lineNum < initialLineCount)
 			{
 				fprintf(fp, "\n");
 				lineNum++;
 			}
-			//Switch case dependent on the line at which each piece of information should be printed
 			else
 			{
 				switch(lineNum)
 				{
-					//Input params always printed on line 1
+					//Dimensions of window
 					case PARAMS:
 						fprintf(fp, "Input Parameters: \tNumber of Rows: %d Number of Columns: %d Number of Boxes: %d Number of Doors: %d Number of Robots %d\n", numRows, numCols, numDoors, numBoxes, numBoxes);
 						break;
 
-					//Door information will always be printed on line 3
+					// Doors will always be printed on line 3
 					case DOORS:
-						//Write information of each door to file
 						while( lineNum < DOORS + numDoors)
 						{
-							//index of current door is equal to lineNum - DOORS (i.e the first door is accessed at index 5 - 5 = 0)
 							fprintf(fp, "Door %d spawned at (row %d, column %d)\n", (lineNum - DOORS), doorLoc[lineNum - DOORS][0], doorLoc[lineNum - DOORS][1]);
 							lineNum++;
 						}
-						//Decrement lineNum by numDoors to ensure constants are still meaningful
 						lineNum -= numDoors;
 						break;
 					
-					//Box information printed at line 5 + offset of however many doors were previously printed
+					//Boxes
 					case BOXES:
-						//write information of each box to file
 						while( lineNum < BOXES + numBoxes)
 						{
-							//box info is accessed in exact same manner as door info
 							fprintf(fp, "Box %d spawned at (row %d, column %d)\n", (*robots)[lineNum - BOXES]->robotNum, (*robots)[lineNum - BOXES]->boxRow, (*robots)[lineNum - BOXES]->boxCol);
 							lineNum++;
 						}
-						//Decrement lineNum by number of boxes
 						lineNum -= numBoxes;
 					    break;
 					
-					//Robot information printed at line 7 + offset of how many boxes and doors were previously printed
+					//Write initial spawn points of robots and their destination doors
 					case ROBOTS:
-						//Write initial spawn points of robots and their destination doors
 						while( lineNum < ROBOTS + numBoxes)
 						{
-							//robot info is accessed in exact same manner as box and door info
 							fprintf(fp, "Robot %d spawned at (row %d, column %d) with destination door %d\n", (*robots)[lineNum - ROBOTS]->robotNum, (*robots)[lineNum - ROBOTS]->robotRow, (*robots)[lineNum - ROBOTS]->robotCol, (*robots)[lineNum - ROBOTS]->doorNum);
 							lineNum++;
 						}
-						//Add back the previously decrement offsets to ensure while loop exits
 						lineNum += (numDoors + 2*numBoxes);
 					    break;
 
 				}//end switch 
-				
-				//increment lineCount
 				lineNum++;
 			}
 		}
-		//Writes a blank line to the file after all the initial information. Done to avoid 
-		//checking for first time a robot's movement is appended to the file.
 		fprintf(fp, "\n");
 	}
 }
