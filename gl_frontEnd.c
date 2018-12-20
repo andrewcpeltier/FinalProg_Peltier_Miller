@@ -55,7 +55,7 @@ void myMouse(int b, int s, int x, int y);
 void myGridPaneMouse(int b, int s, int x, int y);
 void myStatePaneMouse(int b, int s, int x, int y);
 void myKeyboard(unsigned char c, int x, int y);
-void myIdle(void);
+void myTimerFunc(int val);
 void createDoorColors(void);
 void freeDoorColors(void);
 
@@ -146,7 +146,7 @@ void drawRobotAndBox(int id,
 	glPopMatrix();
 	char boxStr[4];
 	sprintf(boxStr, "B%d", id);
-	displayTextualInfo(boxStr, boxCol*DH + DH/4, boxRow*DV + DV/3, 0);
+	displayTextualInfo(boxStr, (boxCol+0.25f)*DH,(boxRow+0.66f)*DV, 0);
 
 	//	my robots are dark gray with a contour the same color as destination door
 	glColor4f(0.25f, 0.25f, 0.f, 1.f);
@@ -169,9 +169,9 @@ void drawRobotAndBox(int id,
 	glPopMatrix();
 	char robotStr[4];
 	sprintf(robotStr, "R%d", id);
-	displayTextualInfo(robotStr, robotCol*DH + DH/4, robotRow*DV + DV/3, 0);
-	
-	
+	displayTextualInfo(robotStr, (robotCol+0.25f)*DH, (robotRow+0.66f)*DV, 0);
+
+
 }
 
 //	This function assigns a color to the door based on its number
@@ -189,10 +189,10 @@ void drawDoor(int doorNumber, int doorRow, int doorCol)
 		glVertex2i((doorCol+1)*DH, (doorRow+1)*DV);
 		glVertex2i(doorCol*DH, (doorRow+1)*DV);
 	glEnd();
-	
+
 	char doorStr[4];
 	sprintf(doorStr, "D%d", doorNumber);
-	displayTextualInfo(doorStr, doorCol*DH + DH/4, doorRow*DV + DV/3, 0);
+	displayTextualInfo(doorStr, (doorCol+0.25f)*DH, (doorRow+0.66f)*DV, 0);
 }
 
 //	This is the function that does the actual grid drawing
@@ -200,7 +200,7 @@ void drawGrid(void)
 {
 	const int	DH = GRID_PANE_WIDTH / numCols,
 				DV = GRID_PANE_HEIGHT / numRows;
-	
+
 	//	Then draw a grid of lines on top of the squares
 	glColor4f(0.5f, 0.5f, 0.5f, 1.f);
 	glBegin(GL_LINES);
@@ -208,7 +208,7 @@ void drawGrid(void)
 		for (int i=0; i<= numRows; i++)
 		{
 			glVertex2i(0, i*DV);
-			glVertex2i(numCols*DV, i*DV);
+			glVertex2i(numCols*DH, i*DV);
 		}
 		//	Vertical
 		for (int j=0; j<= numCols; j++)
@@ -251,31 +251,31 @@ void displayTextualInfo(const char* infoStr, int xPos, int yPos, int fontSize)
 				textWidth += glutBitmapWidth(SMALL_DISPLAY_FONT, infoStr[k]);
 			}
 			break;
-		
+
 		case 1:
 			for (int k=0; k<infoLn; k++)
 			{
 				textWidth += glutBitmapWidth(MEDIUM_DISPLAY_FONT, infoStr[k]);
 			}
 			break;
-		
+
 		case 2:
 			for (int k=0; k<infoLn; k++)
 			{
 				textWidth += glutBitmapWidth(LARGE_DISPLAY_FONT, infoStr[k]);
 			}
 			break;
-			
+
 		default:
 			break;
 	}
-		
+
 	//  add a few pixels of padding
     textWidth += 2*TEXT_PADDING;
-	
+
     //-----------------------------------------------
     //  4.  Draw the string
-    //-----------------------------------------------    
+    //-----------------------------------------------
     glColor4fv(kTextColor);
     int x = xPos;
 	switch(fontSize)
@@ -288,7 +288,7 @@ void displayTextualInfo(const char* infoStr, int xPos, int yPos, int fontSize)
 				x += glutBitmapWidth(SMALL_DISPLAY_FONT, infoStr[k]);
 			}
 			break;
-		
+
 		case 1:
 			for (int k=0; k<infoLn; k++)
 			{
@@ -297,7 +297,7 @@ void displayTextualInfo(const char* infoStr, int xPos, int yPos, int fontSize)
 				x += glutBitmapWidth(MEDIUM_DISPLAY_FONT, infoStr[k]);
 			}
 			break;
-		
+
 		case 2:
 			for (int k=0; k<infoLn; k++)
 			{
@@ -306,7 +306,7 @@ void displayTextualInfo(const char* infoStr, int xPos, int yPos, int fontSize)
 				x += glutBitmapWidth(LARGE_DISPLAY_FONT, infoStr[k]);
 			}
 			break;
-			
+
 		default:
 			break;
 	}
@@ -318,8 +318,8 @@ void displayTextualInfo(const char* infoStr, int xPos, int yPos, int fontSize)
 	glMaterialfv(GL_FRONT, GL_AMBIENT, oldAmb);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, oldDif);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, oldSpec);
-	glMaterialf(GL_FRONT, GL_SHININESS, oldShiny);  
-    
+	glMaterialf(GL_FRONT, GL_SHININESS, oldShiny);
+
     //-----------------------------------------------
     //  6.  Restore reference frame
     //-----------------------------------------------
@@ -376,8 +376,8 @@ void myDisplay(void)
 
 	gridDisplayFunc();
 	stateDisplayFunc();
-	
-    glutSetWindow(gMainWindow);	
+
+    glutSetWindow(gMainWindow);
 }
 
 //	This function is called when a mouse event occurs just in the tiny
@@ -405,7 +405,7 @@ void myGridPaneMouse(int button, int state, int x, int y)
 				//	exit(0);
 			}
 			break;
-			
+
 		default:
 			break;
 	}
@@ -429,7 +429,7 @@ void myStatePaneMouse(int button, int state, int x, int y)
 				//	exit(0);
 			}
 			break;
-			
+
 		default:
 			break;
 	}
@@ -444,7 +444,7 @@ void myStatePaneMouse(int button, int state, int x, int y)
 void myKeyboard(unsigned char c, int x, int y)
 {
 	int ok = 0;
-	
+
 	switch (c)
 	{
 		//	'esc' to quit
@@ -470,19 +470,23 @@ void myKeyboard(unsigned char c, int x, int y)
 	{
 		//	do something?
 	}
-	
+
 	glutSetWindow(gMainWindow);
 	glutPostRedisplay();
 }
 
 
-void myIdle(void)
+
+void myTimerFunc(int value)
 {
-    //  possibly I do something to update the scene
-    
-	//	And finally I perform the rendering
-	glutPostRedisplay();
+	//	value not used.  Warning suppression
+	(void) value;
+
+	glutTimerFunc(25, myTimerFunc, 0);
+
+    myDisplay();
 }
+
 
 
 void initializeFrontEnd(int argc, char** argv, void (*gridDisplayCB)(void),
@@ -497,16 +501,16 @@ void initializeFrontEnd(int argc, char** argv, void (*gridDisplayCB)(void),
 	glutInitWindowPosition(INIT_WIN_X, INIT_WIN_Y);
 	gMainWindow = glutCreateWindow("Colorful Trails -- CSC 412 - Spring 2017");
 	glClearColor(0.2f, 0.2f, 0.2f, 1.f);
-	
+
 	//	set up the callbacks for the main window
 	glutDisplayFunc(myDisplay);
 	glutReshapeFunc(myResize);
 	glutMouseFunc(myMouse);
-    glutIdleFunc(myIdle);
-	
+    glutTimerFunc(25, myTimerFunc, 0);
+
 	gridDisplayFunc = gridDisplayCB;
 	stateDisplayFunc = stateDisplayCB;
-	
+
 	//	create the two panes as glut subwindows
 	gSubwindow[GRID_PANE] = glutCreateSubWindow(gMainWindow,
 												0, 0,							//	origin
@@ -519,8 +523,8 @@ void initializeFrontEnd(int argc, char** argv, void (*gridDisplayCB)(void),
 	glutKeyboardFunc(myKeyboard);
 	glutMouseFunc(myGridPaneMouse);
 	glutDisplayFunc(gridDisplayCB);
-	
-	
+
+
 	glutSetWindow(gMainWindow);
 	gSubwindow[STATE_PANE] = glutCreateSubWindow(gMainWindow,
 												GRID_PANE_WIDTH + H_PADDING, 0,	//	origin
@@ -533,7 +537,7 @@ void initializeFrontEnd(int argc, char** argv, void (*gridDisplayCB)(void),
 	glutKeyboardFunc(myKeyboard);
 	glutMouseFunc(myGridPaneMouse);
 	glutDisplayFunc(stateDisplayCB);
-	
+
 	createDoorColors();
 }
 
@@ -542,11 +546,11 @@ void createDoorColors(void)
 	doorColor = (float**) malloc(numDoors * sizeof(float*));
 
 	float hueStep = 360.f / numDoors;
-	
+
 	for (int k=0; k<numDoors; k++)
 	{
 		doorColor[k] = (float*) malloc(4*sizeof(float));
-		
+
 		//	compute a hue for the door
 		float hue = k*hueStep;
 		//	convert the hue to an RGB color
@@ -607,7 +611,6 @@ void freeDoorColors(void)
 {
 	for (int k=0; k<numDoors; k++)
 		free(doorColor[k]);
-	
+
 	free(doorColor);
 }
-
