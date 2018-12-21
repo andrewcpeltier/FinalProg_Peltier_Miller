@@ -42,9 +42,10 @@
 //	you get left turn from dir as (dir + 1) % NUM_TRAVEL_DIRECTIONS
 typedef enum Direction {
 								NORTH = 0,
-								WEST,
-								SOUTH,
-								EAST,
+								WEST = 1,
+								SOUTH = 2,
+								EAST = 3,
+								END = 4,
 								//
 								NUM_TRAVEL_DIRECTIONS
 } Direction;
@@ -72,7 +73,6 @@ void drawRobotAndBox(int id,
 
 //	This function assigns a color to the door based on its number
 void drawDoor(int doorNumber, int doorRow, int doorCol);
-
 
 void drawGrid(void);
 void drawState(int numMessages, char** message);
