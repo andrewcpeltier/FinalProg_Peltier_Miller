@@ -1,20 +1,873 @@
-Input Parameters: 	Number of Rows: 30 Number of Columns: 30 Number of Boxes: 1 Number of Doors: 1 Number of Robots 1
+Input Parameters: 	Number of Rows: 30 Number of Columns: 30 Number of Boxes: 20 Number of Doors: 20 Number of Robots 20
 
-Door 0 spawned at (row 26, column 16)
+Door 0 spawned at (row 10, column 28)
+Door 1 spawned at (row 5, column 26)
+Door 2 spawned at (row 9, column 15)
+Door 3 spawned at (row 1, column 12)
+Door 4 spawned at (row 29, column 5)
+Door 5 spawned at (row 4, column 14)
+Door 6 spawned at (row 17, column 15)
+Door 7 spawned at (row 13, column 10)
+Door 8 spawned at (row 21, column 26)
+Door 9 spawned at (row 12, column 12)
+Door 10 spawned at (row 20, column 13)
+Door 11 spawned at (row 1, column 15)
+Door 12 spawned at (row 11, column 14)
+Door 13 spawned at (row 27, column 22)
+Door 14 spawned at (row 7, column 17)
+Door 15 spawned at (row 12, column 17)
+Door 16 spawned at (row 7, column 10)
+Door 17 spawned at (row 14, column 16)
+Door 18 spawned at (row 25, column 7)
+Door 19 spawned at (row 20, column 17)
 
-Box 0 spawned at (row 6, column 24)
+Box 0 spawned at (row 3, column 11)
+Box 1 spawned at (row 26, column 28)
+Box 2 spawned at (row 4, column 19)
+Box 3 spawned at (row 18, column 27)
+Box 4 spawned at (row 4, column 7)
+Box 5 spawned at (row 12, column 12)
+Box 6 spawned at (row 9, column 17)
+Box 7 spawned at (row 16, column 9)
+Box 8 spawned at (row 21, column 28)
+Box 9 spawned at (row 28, column 5)
+Box 10 spawned at (row 13, column 12)
+Box 11 spawned at (row 27, column 15)
+Box 12 spawned at (row 23, column 9)
+Box 13 spawned at (row 19, column 8)
+Box 14 spawned at (row 21, column 11)
+Box 15 spawned at (row 28, column 16)
+Box 16 spawned at (row 3, column 7)
+Box 17 spawned at (row 13, column 19)
+Box 18 spawned at (row 25, column 9)
+Box 19 spawned at (row 20, column 16)
 
-Robot 0 spawned at (row 0, column 0) with destination door 0
+Robot 0 spawned at (row 4, column 15) with destination door 1
+Robot 1 spawned at (row 6, column 23) with destination door 5
+Robot 2 spawned at (row 18, column 22) with destination door 0
+Robot 3 spawned at (row 22, column 26) with destination door 7
+Robot 4 spawned at (row 5, column 19) with destination door 13
+Robot 5 spawned at (row 18, column 20) with destination door 19
+Robot 6 spawned at (row 25, column 1) with destination door 0
+Robot 7 spawned at (row 13, column 26) with destination door 13
+Robot 8 spawned at (row 1, column 9) with destination door 17
+Robot 9 spawned at (row 28, column 6) with destination door 12
+Robot 10 spawned at (row 7, column 24) with destination door 16
+Robot 11 spawned at (row 9, column 2) with destination door 14
+Robot 12 spawned at (row 17, column 7) with destination door 16
+Robot 13 spawned at (row 2, column 21) with destination door 19
+Robot 14 spawned at (row 22, column -1) with destination door 15
+Robot 15 spawned at (row 0, column 21) with destination door 13
+Robot 16 spawned at (row 18, column 13) with destination door 6
+Robot 17 spawned at (row 28, column 17) with destination door 1
+Robot 18 spawned at (row 23, column 23) with destination door 19
+Robot 19 spawned at (row 20, column 4) with destination door 16
 
+robot 6 move E
+robot 7 move W
+robot 5 move W
+robot 8 move W
+robot 9 move W
+robot 4 move W
+robot 10 move E
+robot 11 move E
+robot 12 move E
+robot 13 move W
+robot 3 move W
+robot 14 move E
+robot 15 move W
+robot 16 move W
+robot 17 move E
+robot 18 move W
+robot 19 move W
+robot 2 move W
+robot 1 move W
 robot 0 move W
+robot 6 move E
+robot 7 move W
+robot 5 move W
+robot 8 move W
+robot 9 move W
+robot 4 move W
+robot 10 move E
+robot 11 move E
+robot 12 move N
+robot 13 move W
+robot 3 move W
+robot 14 move E
+robot 15 move W
+robot 16 move W
+robot 17 move S
+robot 18 move W
+robot 19 move W
+robot 2 move W
+robot 1 move W
 robot 0 move W
+robot 6 move E
+robot 7 move W
+robot 5 move W
+robot 8 move W
+robot 9 push E
+robot 4 move W
+robot 10 move E
+robot 11 move E
+robot 12 move N
+robot 13 move W
+robot 3 move N
+robot 14 move E
+robot 15 move W
+robot 16 move W
+robot 17 move S
+robot 18 move W
+robot 19 move W
+robot 2 move W
+robot 1 move W
 robot 0 move W
+robot 6 move E
+robot 7 move W
+robot 5 move W
+robot 8 move W
+robot 9 push E
+robot 4 move W
+robot 10 move E
+robot 11 move E
+robot 12 move N
+robot 13 move W
+robot 3 move N
+robot 14 move E
+robot 15 move W
+robot 16 move W
+robot 17 move S
+robot 18 move W
+robot 19 move W
+robot 2 move W
+robot 1 move W
 robot 0 move W
+robot 6 move E
+robot 7 move W
+robot 5 move W
+robot 8 move W
+robot 9 push E
+robot 4 move W
+robot 10 move E
+robot 11 move E
+robot 12 move N
+robot 13 move W
+robot 3 move N
+robot 14 move E
+robot 15 move W
+robot 16 move W
+robot 17 move S
+robot 18 move W
+robot 19 move W
+robot 2 move S
+robot 1 move W
 robot 0 move W
+robot 6 move E
+robot 7 move W
+robot 5 move W
+robot 8 move W
+robot 9 push E
+robot 4 move W
+robot 10 move E
+robot 11 move E
+robot 12 move N
+robot 13 move W
+robot 3 move N
+robot 14 move E
+robot 15 move W
+robot 16 move W
+robot 17 move S
+robot 18 move W
+robot 19 move W
+robot 2 move S
+robot 1 move W
+robot 0 move S
+robot 6 move E
+robot 7 move W
+robot 5 move W
+robot 8 move W
+robot 9 push E
+robot 4 move W
+robot 10 move E
+robot 11 move E
+robot 12 move N
+robot 13 move W
+robot 3 push W
+robot 14 move E
+robot 15 move N
+robot 16 move W
+robot 17 move S
+robot 18 move W
+robot 19 move W
+robot 2 move S
+robot 1 move S
+robot 0 push E
+robot 6 move E
+robot 7 move W
+robot 5 move W
+robot 8 move W
+robot 9 push E
+robot 4 move W
+robot 10 move E
+robot 11 move E
+robot 12 push E
+robot 13 move W
+robot 3 push W
+robot 14 move E
+robot 15 move N
+robot 16 move S
+robot 17 move S
+robot 18 move W
+robot 19 move W
+robot 2 move S
+robot 1 move S
+robot 0 push E
+robot 6 move E
+robot 7 move W
+robot 5 move W
+robot 8 move W
+robot 9 push E
+robot 4 move W
+robot 10 move E
+robot 11 move E
+robot 12 move S
+robot 13 move W
+robot 3 push W
+robot 14 move E
+robot 15 move N
+robot 16 move S
+robot 17 move S
+robot 18 move W
+robot 19 move W
+robot 2 move S
+robot 1 move S
+robot 0 push E
+robot 6 move E
+robot 7 move W
+robot 5 move S
+robot 8 move W
+robot 9 push E
+robot 4 move W
+robot 10 move E
+robot 11 move E
+robot 12 move E
+robot 13 move W
+robot 3 push W
+robot 14 move E
+robot 15 move N
+robot 16 move S
+robot 17 move S
+robot 18 move W
+robot 19 move W
+robot 2 move S
+robot 1 move S
+robot 0 push E
+robot 6 move E
+robot 7 move W
+robot 5 move S
+robot 8 move W
+robot 9 push E
+robot 4 move W
+robot 10 move E
+robot 11 move E
+robot 12 push N
+robot 13 move W
+robot 3 push W
+robot 14 move E
+robot 15 move N
+robot 16 move S
+robot 17 move S
+robot 18 move W
+robot 19 move W
+robot 2 move S
+robot 1 move S
+robot 0 push E
+robot 6 move E
+robot 7 move W
+robot 5 move S
+robot 8 move W
+robot 9 move S
+robot 4 move W
+robot 10 move S
+robot 11 move E
+robot 12 push N
+robot 13 move W
+robot 3 push W
+robot 14 move S
+robot 15 move N
+robot 16 move S
+robot 17 move S
+robot 18 move W
+robot 19 move W
+robot 2 move S
+robot 1 move S
+robot 0 push E
+robot 6 move E
+robot 7 move W
+robot 5 move S
+robot 8 move W
+robot 9 move E
+robot 4 move W
+robot 10 move S
+robot 11 move N
+robot 12 push N
+robot 13 move W
+robot 3 push W
+robot 14 push E
+robot 15 move N
+robot 16 move S
+robot 17 move S
+robot 18 move W
+robot 19 move W
+robot 2 move S
+robot 1 move S
+robot 0 push E
+robot 6 move E
+robot 7 move W
+robot 5 move S
+robot 8 move W
+robot 9 push N
+robot 4 move S
+robot 10 move S
+robot 11 move N
+robot 12 push N
+robot 13 move W
+robot 3 push W
+robot 14 push E
+robot 15 move N
+robot 16 move S
+robot 17 move S
+robot 18 move W
+robot 19 push W
+robot 2 move S
+robot 1 move S
+robot 0 push E
+robot 6 move E
+robot 7 move W
+robot 5 move S
+robot 8 move W
+robot 9 push N
+robot 4 push E
+robot 10 move S
+robot 11 move N
+robot 12 push N
+robot 13 move N
+robot 3 push W
+robot 14 push E
+robot 15 move N
+robot 16 move S
+robot 17 move S
+robot 18 move W
+robot 19 push W
+robot 2 move S
+robot 1 move S
+robot 0 push E
+robot 6 move S
+robot 7 move W
+robot 5 push E
+robot 8 move W
+robot 9 push N
+robot 4 push E
+robot 10 move S
+robot 11 move N
+robot 12 push N
+robot 13 move N
+robot 3 push W
+robot 14 push E
+robot 15 move N
+robot 16 move S
+robot 17 move S
+robot 18 move N
+robot 19 push W
+robot 2 move S
+robot 1 move S
+robot 0 push E
+robot 6 move S
+robot 7 move W
+robot 5 push E
+robot 8 move W
+robot 9 push N
+robot 4 push E
+robot 10 move S
+robot 11 move N
+robot 12 push N
+robot 13 move N
+robot 3 push W
+robot 14 push E
+robot 15 move N
+robot 16 move S
+robot 17 push E
+robot 18 move N
+robot 19 push W
+robot 2 move S
+robot 1 move S
+robot 0 push E
+robot 6 move S
+robot 7 move W
+robot 5 push E
+robot 8 move W
+robot 9 push N
+robot 4 push E
+robot 10 push W
+robot 11 move N
+robot 12 push N
+robot 13 move N
+robot 3 push W
+robot 14 push E
+robot 15 move N
+robot 16 move S
+robot 17 push E
+robot 18 push E
+robot 19 push W
+robot 2 move S
+robot 1 move S
+robot 0 push E
+robot 6 move S
+robot 7 move N
+robot 5 push E
+robot 8 move W
+robot 9 push N
+robot 4 push E
+robot 10 push W
+robot 11 move N
+robot 12 push N
+robot 13 move N
+robot 3 push W
+robot 14 move S
+robot 15 move N
+robot 16 move S
+robot 17 push E
+robot 18 push E
+robot 19 push W
+robot 2 push E
+robot 1 move S
+robot 0 push E
+robot 6 move S
+robot 7 move N
+robot 5 push E
+robot 8 move W
+robot 9 push N
+robot 4 push E
+robot 10 move S
+robot 11 move N
+robot 12 push N
+robot 13 move N
+robot 3 push W
+robot 14 move E
+robot 15 move N
+robot 16 move S
+robot 17 push E
+robot 18 push E
+robot 19 move S
+robot 2 push E
+robot 1 move S
+robot 0 push E
+robot 6 move S
+robot 7 move N
+robot 5 move W
+robot 8 move S
+robot 9 push N
+robot 4 push E
+robot 10 move W
+robot 11 move N
+robot 12 push N
+robot 13 move N
+robot 3 push W
+robot 14 push N
+robot 15 move N
+robot 16 move S
+robot 17 push E
+robot 18 push E
+robot 19 move W
+robot 2 push E
+robot 1 move S
+robot 0 push E
+robot 6 move S
+robot 7 push E
+robot 5 move S
+robot 8 move S
+robot 9 push N
+robot 4 push E
+robot 10 push N
+robot 11 move N
+robot 12 push N
+robot 13 move N
+robot 3 push W
+robot 14 push N
+robot 15 move N
+robot 16 move S
+robot 17 push E
+robot 18 push E
+robot 19 push N
+robot 2 push E
+robot 1 move S
 robot 0 move W
-robot 0 move W
-robot 0 move W
-robot 0 move W
-robot 0 move W
-robot 0 move W
-robot 0 move W
+robot 6 move S
+robot 7 push E
+robot 5 push N
+robot 8 move S
+robot 9 push N
+robot 4 push E
+robot 10 push N
+robot 11 move N
+robot 12 push N
+robot 13 move N
+robot 3 push W
+robot 14 push N
+robot 15 move N
+robot 16 push E
+robot 17 push E
+robot 18 push E
+robot 19 push N
+robot 2 push E
+robot 1 move S
+robot 0 move S
+robot 6 move S
+robot 7 push E
+robot 5 push N
+robot 8 move S
+robot 9 push N
+robot 4 push E
+robot 10 push N
+robot 11 move N
+robot 12 push N
+robot 13 move N
+robot 3 move S
+robot 14 push N
+robot 15 move N
+robot 16 push E
+robot 17 move S
+robot 18 push E
+robot 19 push N
+robot 2 push E
+robot 1 move S
+robot 0 push N
+robot 6 move S
+robot 7 push E
+robot 5 push N
+robot 8 move S
+robot 9 push N
+robot 4 push E
+robot 10 push N
+robot 11 move N
+robot 12 push N
+robot 13 move N
+robot 3 move W
+robot 14 push N
+robot 15 move N
+robot 16 push E
+robot 17 move E
+robot 18 push E
+robot 19 push N
+robot 2 push E
+robot 1 move S
+robot 0 push N
+robot 6 move S
+robot 7 push E
+robot 5 push N
+robot 8 move S
+robot 9 push N
+robot 4 push E
+robot 10 push N
+robot 11 move N
+robot 12 push N
+robot 13 move N
+robot 3 push N
+robot 14 push N
+robot 15 move N
+robot 16 push E
+robot 17 push N
+robot 18 move S
+robot 19 push N
+robot 2 push E
+robot 1 move S
+robot 0 end
+robot 6 move S
+robot 7 push E
+robot 5 push N
+robot 8 move S
+robot 9 push N
+robot 4 push E
+robot 10 push N
+robot 11 move N
+robot 12 end
+robot 13 move N
+robot 3 push N
+robot 14 push N
+robot 15 move N
+robot 16 push E
+robot 17 push N
+robot 18 move E
+robot 19 push N
+robot 2 push E
+robot 1 push W
+robot 6 move S
+robot 7 push E
+robot 5 push N
+robot 8 move S
+robot 9 push N
+robot 4 push E
+robot 10 end
+robot 11 move N
+robot 13 move N
+robot 3 push N
+robot 14 push N
+robot 15 move N
+robot 16 push E
+robot 17 push N
+robot 18 push N
+robot 19 push N
+robot 2 move W
+robot 1 push W
+robot 6 move S
+robot 7 push E
+robot 5 push N
+robot 8 move S
+robot 9 push N
+robot 4 push E
+robot 13 move N
+robot 3 push N
+robot 14 push N
+robot 15 move N
+robot 16 push E
+robot 17 push N
+robot 18 push N
+robot 19 push N
+robot 2 move S
+robot 11 move N
+robot 1 push W
+robot 6 move S
+robot 7 push E
+robot 5 push N
+robot 8 move S
+robot 9 push N
+robot 4 move W
+robot 13 move N
+robot 3 push N
+robot 14 end
+robot 15 move N
+robot 16 push E
+robot 17 push N
+robot 18 push N
+robot 19 push N
+robot 2 push N
+robot 11 move N
+robot 1 push W
+robot 6 move S
+robot 7 push E
+robot 5 end
+robot 8 move S
+robot 9 end
+robot 4 move S
+robot 13 move N
+robot 3 end
+robot 16 move W
+robot 17 push N
+robot 18 push N
+robot 19 push N
+robot 2 push N
+robot 11 push E
+robot 15 move N
+robot 1 push W
+robot 6 push E
+robot 7 push E
+robot 13 push E
+robot 17 push N
+robot 18 push N
+robot 19 push N
+robot 2 push N
+robot 11 push E
+robot 15 move N
+robot 16 move S
+robot 4 push N
+robot 8 move S
+robot 1 push W
+robot 6 push E
+robot 7 push E
+robot 13 push E
+robot 17 push N
+robot 18 end
+robot 19 push N
+robot 2 push N
+robot 11 move S
+robot 15 move N
+robot 16 push N
+robot 4 push N
+robot 8 move S
+robot 1 push W
+robot 6 push E
+robot 7 push E
+robot 13 push E
+robot 17 end
+robot 2 push N
+robot 11 move E
+robot 15 move N
+robot 16 push N
+robot 4 push N
+robot 8 move S
+robot 19 push N
+robot 1 push W
+robot 6 push E
+robot 7 move W
+robot 13 push E
+robot 2 push N
+robot 11 push N
+robot 15 push E
+robot 16 push N
+robot 4 push N
+robot 8 move S
+robot 19 end
+robot 1 push W
+robot 6 push E
+robot 7 move S
+robot 13 push E
+robot 2 end
+robot 11 push N
+robot 15 push E
+robot 16 push N
+robot 4 push N
+robot 8 move S
+robot 1 push W
+robot 6 push E
+robot 7 push N
+robot 13 push E
+robot 15 push E
+robot 16 push N
+robot 4 push N
+robot 8 move S
+robot 11 push N
+robot 1 push W
+robot 6 push E
+robot 7 push N
+robot 13 push E
+robot 15 push E
+robot 16 push N
+robot 4 push N
+robot 8 move S
+robot 11 push N
+robot 1 push W
+robot 6 push E
+robot 7 push N
+robot 13 push E
+robot 15 push E
+robot 16 push N
+robot 4 push N
+robot 8 move S
+robot 11 push N
+robot 1 push W
+robot 6 push E
+robot 7 push N
+robot 13 push E
+robot 15 push E
+robot 16 push N
+robot 4 push N
+robot 8 move S
+robot 11 push N
+robot 1 push W
+robot 6 push E
+robot 7 push N
+robot 13 move W
+robot 15 move S
+robot 16 push N
+robot 4 push N
+robot 8 push W
+robot 11 push N
+robot 1 move S
+robot 6 push E
+robot 7 push N
+robot 13 move S
+robot 15 move E
+robot 16 push N
+robot 4 push N
+robot 8 push W
+robot 11 push N
+robot 1 move W
+robot 6 move W
+robot 7 push N
+robot 13 push N
+robot 15 push N
+robot 16 push N
+robot 4 push N
+robot 8 push W
+robot 11 push N
+robot 1 push N
+robot 6 move S
+robot 7 push N
+robot 13 end
+robot 15 end
+robot 16 push N
+robot 4 push N
+robot 8 push W
+robot 11 push N
+robot 1 push N
+robot 6 push N
+robot 7 push N
+robot 16 push N
+robot 4 push N
+robot 8 push W
+robot 11 push N
+robot 1 push N
+robot 6 end
+robot 7 push N
+robot 16 push N
+robot 4 push N
+robot 8 push W
+robot 11 push N
+robot 1 push N
+robot 16 end
+robot 4 push N
+robot 8 push W
+robot 11 push N
+robot 7 push N
+robot 1 push N
+robot 8 push W
+robot 11 push N
+robot 7 end
+robot 4 push N
+robot 1 push N
+robot 8 push W
+robot 11 push N
+robot 4 push N
+robot 1 push N
+robot 8 push W
+robot 11 push N
+robot 4 push N
+robot 1 push N
+robot 8 push W
+robot 11 push N
+robot 4 push N
+robot 1 push N
+robot 8 push W
+robot 11 push N
+robot 4 push N
+robot 1 push N
+robot 8 move S
+robot 11 push N
+robot 4 push N
+robot 1 push N
+robot 8 move W
+robot 11 push N
+robot 4 push N
+robot 1 push N
+robot 8 push N
+robot 11 end
+robot 4 end
+robot 1 push N
+robot 8 push N
+robot 1 push N
+robot 8 push N
+robot 1 push N
+robot 8 push N
+robot 1 push N
+robot 8 push N
+robot 1 push N
+robot 8 push N
+robot 1 push N
+robot 8 push N
+robot 1 push N
+robot 8 end
+robot 1 push N
+robot 1 push N
+robot 1 push N
+robot 1 end

@@ -155,7 +155,34 @@ int main(int argc, char** argv)
 	//	Now we can do application-level initialization
 	initializeApplication();
 
-	
+	pthread_t* thread = (pthread_t*)malloc(numBoxes*sizeof(pthread_t));
+	robotLock = (pthread_mutex_t*) malloc(numBoxes*sizeof(pthread_mutex_t));
+	for(int i = 0; i < numBoxes; i++)
+	{
+		pthread_mutex_init(robotLock + i, NULL);
+		pthread_mutex_lock(robotLock + i);
+	}
+
+	//Create a thread specific to each robot
+	for(int i = 0; i < numBoxes; i++)
+	{
+		
+		//Create a thread, store it in the robots struct and call moveBox with the current robot as the parameter
+		int result = pthread_create(thread + i, NULL, &moveBox, (*robots)[i]);
+
+		//error handling, written by Professor Jean-Yves Hervé
+		if (result != 0)
+		{
+			printf ("could not pthread_create thread %d. %d/%s\n",
+					i, result, strerror(result));
+			exit (EXIT_FAILURE);
+		}
+	}
+
+	for(int i = 0; i < numBoxes; i++)
+	{
+		pthread_mutex_unlock(robotLock + i);
+	}
 
 	//	Now we enter the main loop of the program and to a large extend
 	//	"lose control" over its execution.  The callback functions that 
@@ -204,35 +231,6 @@ void displayGridPane()
 	//	as row and column.  So, the first index is a row (y) coordinate, and the second
 	//	index is a column (x) coordinate.
 
-	pthread_t* thread = (pthread_t*)malloc(numBoxes*sizeof(pthread_t));
-	robotLock = (pthread_mutex_t*) malloc(numBoxes*sizeof(pthread_mutex_t));
-	for(int i = 0; i < numBoxes; i++)
-	{
-		pthread_mutex_init(robotLock + i, NULL);
-		pthread_mutex_lock(robotLock + i);
-	}
-
-	//Create a thread specific to each robot
-	for(int i = 0; i < numBoxes; i++)
-	{
-		
-		//Create a thread, store it in the robots struct and call moveBox with the current robot as the parameter
-		int result = pthread_create(thread + i, NULL, &moveBox, (*robots)[i]);
-
-		//error handling, written by Professor Jean-Yves Hervé
-		if (result != 0)
-		{
-			printf ("could not pthread_create thread %d. %d/%s\n",
-					i, result, strerror(result));
-			exit (EXIT_FAILURE);
-		}
-	}
-
-	for(int i = 0; i < numBoxes; i++)
-	{
-		pthread_mutex_unlock(robotLock + i);
-	}
-
 	//	normally, here I would initialize the location of my doors, boxes,
 	//	and robots, and create threads (not necessarily in that order).
 	//	For the handout I have nothing to do.
@@ -250,8 +248,6 @@ void displayGridPane()
 		//				row				column	
 		drawDoor(i, doorLoc[i][0], doorLoc[i][1]);
 	}
-
-	usleep(robotSleepTime);
 
 	//	This call does nothing important. It only draws lines
 	//	There is nothing to synchronize here
@@ -387,7 +383,7 @@ void* moveBox(void *argument)
 		struct robot *robotThread = argument;
 
 		//If the robot has yet to push the box to the door
-		if(!robotThread->reached)
+		while(!robotThread->reached)
 		{
 			// Box is not in the x position of the door
 			if(robotThread->boxCol != robotThread->doorCol)
@@ -590,6 +586,7 @@ void* moveBox(void *argument)
 					numLiveThreads--;
 				}
 			}
+			usleep(robotSleepTime);
 		}
 	return NULL;
 }
@@ -654,6 +651,7 @@ void initializeApplication(void)
 			}
 		}
 	}
+
 	//Allocate memory for outputFolder name
 	char outputFolder[128];
 	snprintf(outputFolder, sizeof(outputFolder), "%s/%s", ".", "Output" );
