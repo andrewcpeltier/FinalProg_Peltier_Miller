@@ -1,0 +1,20 @@
+Input Parameters: 	Number of Rows: 30 Number of Columns: 30 Number of Boxes: 1 Number of Doors: 1 Number of Robots 1
+
+Door 0 spawned at (row 26, column 16)
+
+Box 0 spawned at (row 6, column 24)
+
+Robot 0 spawned at (row 0, column 0) with destination door 0
+
+robot 0 move W
+robot 0 move W
+robot 0 move W
+robot 0 move W
+robot 0 move W
+robot 0 move W
+robot 0 move W
+robot 0 move W
+robot 0 move W
+robot 0 move W
+robot 0 move W
+robot 0 move W
